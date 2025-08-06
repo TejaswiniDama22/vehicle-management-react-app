@@ -1,0 +1,47 @@
+.bookingContainer {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  font-family: sans-serif;
+}
+
+input, select {
+  margin-bottom: 10px;
+  padding: 8px;
+  width: 100%;
+  font-size: 16px;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+.bookButton {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.bookButton:hover {
+  background-color: #1f6a95;
+}
+
+.bookButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}
