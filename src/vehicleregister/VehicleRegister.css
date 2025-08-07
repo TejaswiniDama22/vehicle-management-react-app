@@ -1,25 +1,47 @@
-/* Use this whole block as your Booking component CSS */
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
-.outer-card {
+/* body {
+  font-family: 'Poppins', sans-serif;
+  background: url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1470&q=80') no-repeat center center / cover;
+  margin: 0;
+  padding: 0;
+} */
+
+/* Overlay */
+.vehicle-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
   position: relative;
+}
+
+.vehicle-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+
+/* Glassy Card */
+.card {
+  position: relative;
+  z-index: 2;
   max-width: 500px;
-  margin: 50px auto;
+  width: 100%;
   padding: 30px 25px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  font-family: 'Poppins', sans-serif;
-  color: #fff;
   animation: slideFadeIn 0.6s ease-in-out;
-  user-select: none;
 }
 
-.outer-card:hover {
+.card:hover {
   transform: translateY(-2px);
   transition: transform 0.3s ease;
 }
@@ -27,52 +49,54 @@
 h2 {
   font-weight: 600;
   text-align: center;
-  margin-bottom: 25px;
   color: #ffffff;
+  margin-bottom: 25px;
 }
 
-.form-group {
-  margin-bottom: 15px;
-  position: relative;
-  z-index: 2;
+h2 i {
+  margin-right: 10px;
 }
 
-.form-group label {
+/* Form Inputs */
+.form-label {
+  color: #ffffff;
   font-weight: 500;
   margin-bottom: 6px;
   display: block;
-  color: #ffffff;
 }
 
 input.form-control,
-select.form-select,
-input[type="text"],
-input[type="number"],
-input[type="datetime-local"] {
+select.form-select {
   width: 100%;
   padding: 10px 12px;
   margin-bottom: 15px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   background-color: rgba(255, 255, 255, 0.15);
-  color: black;
-  font-size: 1rem;
+  color:black;
   transition: all 0.3s ease;
-  box-sizing: border-box;
 }
 
-input::placeholder {
+input.form-control::placeholder {
   color: #e0e0e0;
 }
 
-input:focus,
-select:focus {
+input.form-control:focus,
+select.form-select:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.25);
   border-color: #ffffff;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
 
+/* Button Container to center the button */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Stylish Primary Button */
 button.btn-primary {
   background: linear-gradient(135deg, #1e3c72, #2a5298);
   color: #fff;
@@ -87,9 +111,6 @@ button.btn-primary {
   letter-spacing: 0.8px;
   position: relative;
   overflow: hidden;
-  width: 100%;
-  display: block;
-  margin-top: 10px;
 }
 
 button.btn-primary::before {
@@ -102,7 +123,6 @@ button.btn-primary::before {
   background: rgba(255, 255, 255, 0.2);
   transform: skewX(-20deg);
   transition: all 0.5s ease-in-out;
-  z-index: 1;
 }
 
 button.btn-primary:hover::before {
@@ -112,42 +132,19 @@ button.btn-primary:hover::before {
 button.btn-primary:hover {
   transform: scale(1.05);
   box-shadow: 0 16px 32px rgba(42, 82, 152, 0.5);
-  z-index: 2;
+}
+/* Feedback Text */
+.text-danger small {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #ff5252;
 }
 
-/* Slot availability grid */
-.slot-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  font-size: 14px;
-  color: #fff;
-  z-index: 2;
-}
-
-.slot {
-  background: rgba(224, 247, 233, 0.8);
-  padding: 8px;
-  border-radius: 5px;
-  text-align: center;
-  user-select: none;
-  color: black;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-}
-
-.slot.full {
-  background: #ffcccc;
-  color: #a00;
-  font-weight: bold;
-}
-
-/* Message style */
-.message {
-  margin-top: 10px;
+.text-success {
+  font-size: 1rem;
   font-weight: 600;
   color: #28a745;
-  text-align: center;
+  margin-top: 10px;
 }
 
 /* Animations */

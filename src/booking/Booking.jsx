@@ -1,151 +1,265 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './Booking.css';
+import "./Booking.css";
 
-const BACKEND = 'http://localhost:8080';
+const BACKEND_URL = 'http://localhost:8080';
 
 const Booking = () => {
-    const [userId, setUserId] = useState('');
-    const [vehicle, setVehicle] = useState(null);
-    const [date, setDate] = useState('');
-    const [selectedSlot, setSelectedSlot] = useState('');
-    const [slots, setSlots] = useState([]);
-    const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState({
+    userId: '',
+    licensePlate: '',
+    vehicleType: '',
+    start: '',
+    end: ''
+  });
 
-    // Fetch vehicle when user ID is entered or changed
-    useEffect(() => {
-        if (!userId) {
-            setVehicle(null);
-            return;
-        }
+  const [vehicle, setVehicle] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [message, setMessage] = useState('');
+  const [userBookings, setUserBookings] = useState([]);
 
-        axios.get(`${BACKEND}/vehicle/by-user/${userId}`)
-            .then(res => {
-                setVehicle(res.data);
-                setErrors(prev => ({ ...prev, vehicle: null, userId: null }));
-            })
-            .catch(() => {
-                setVehicle(null);
-                setErrors(prev => ({ ...prev, vehicle: 'No vehicle found for this user' }));
-            });
-    }, [userId]);
-
-    // Fetch available slots when date is selected
-    useEffect(() => {
-        if (!date) return;
-
-        axios.get(`${BACKEND}/booking/slots?date=${date}`)
-            .then(res => {
-                setSlots(res.data.slots || []);
-            })
-            .catch(() => {
-                setSlots([]);
-            });
-    }, [date]);
-
-    function validate() {
-        const newErrors = {};
-        if (!userId) newErrors.userId = 'User ID is required';
-        if (!vehicle) newErrors.vehicle = 'Vehicle not found for this user';
-        if (!date) newErrors.date = 'Date is required';
-        if (!selectedSlot) newErrors.selectedSlot = 'Please select a slot';
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+  // Fetch all booked slots for selected date (to show availability)
+  useEffect(() => {
+    if (formData.start) {
+      const date = formData.start.split('T')[0];
+      axios.get(`${BACKEND_URL}/api/booking/booked-slots?date=${date}`)
+        .then(res => setBookedSlots(res.data))
+        .catch(err => console.error(err));
     }
+  }, [formData.start]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validate()) return;
+  // Fetch bookings for user when userId changes
+  useEffect(() => {
+    if (formData.userId) {
+      axios.get(`${BACKEND_URL}/api/booking/user/${formData.userId}`)
+        .then(res => setUserBookings(res.data))
+        .catch(err => {
+          setUserBookings([]);
+          console.error(err);
+        });
+    } else {
+      setUserBookings([]);
+    }
+  }, [formData.userId]);
 
-        const [startHour] = selectedSlot.split(':');
-        const start = `${date}T${startHour.padStart(2, '0')}:00:00`;
-        const end = `${date}T${(parseInt(startHour) + 1).toString().padStart(2, '0')}:00:00`;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-        try {
-            const res = await axios.post(`${BACKEND}/booking/book`, {
-                userId,
-                vehicleType: vehicle.type,
-                licensePlate: vehicle.licensePlate,
-                start,
-                end
-            });
-            alert(res.data.message);
-        } catch (err) {
-            alert('Booking failed: ' + (err.response?.data?.message || err.message));
+  // Autofill vehicle details by userId
+  const handleUserIdBlur = () => {
+    if (!formData.userId) return;
+
+    axios.get(`${BACKEND_URL}/api/vehicle/user/${formData.userId}`)
+      .then(res => {
+        const data = res.data;
+        const vehicleData = Array.isArray(data) ? data[0] : data;
+
+        if (vehicleData && typeof vehicleData === 'object') {
+          setVehicle(vehicleData);
+          setFormData(prev => ({
+            ...prev,
+            licensePlate: vehicleData.licensePlate || '',
+            vehicleType: vehicleData.type || ''
+          }));
+        } else {
+          setVehicle(null);
         }
-    };
+      })
+      .catch(err => {
+        console.error(err);
+        setVehicle(null);
+      });
+  };
 
-    return (
-        <div className="bookingContainer">
-            <h2>📅 Book a Slot</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>User ID:</label>
-                    <input
-                        type="number"
-                        value={userId}
-                        onChange={(e) => setUserId(e.target.value)}
-                        placeholder="Enter User ID"
-                    />
-                    {errors.userId && <div style={{ color: 'red' }}>{errors.userId}</div>}
-                    {errors.vehicle && <div style={{ color: 'red' }}>{errors.vehicle}</div>}
-                </div>
+  // Calculate available slots for a given hour
+  const getAvailableCount = (hour) => {
+    const TOTAL_SLOTS = 2;
 
-                <div>
-                    <label>Vehicle Type:</label>
-                    <input type="text" value={vehicle?.type || ''} readOnly />
-                </div>
+    if (!bookedSlots.length || !formData.start) return TOTAL_SLOTS;
 
-                <div>
-                    <label>License Plate:</label>
-                    <input type="text" value={vehicle?.licensePlate || ''} readOnly />
-                </div>
+    const dateTimeParts = formData.start.split('T');
+    if (dateTimeParts.length !== 2) return TOTAL_SLOTS;
 
-                <div>
-                    <label>Date:</label>
-                    <input
-                        type="date"
-                        value={date}
-                        onChange={e => {
-                            setDate(e.target.value);
-                            setSelectedSlot('');
-                        }}
-                    />
-                    {errors.date && <div style={{ color: 'red' }}>{errors.date}</div>}
-                </div>
+    const date = dateTimeParts[0];
+    const hourStart = new Date(`${date}T${hour}`);
+    if (isNaN(hourStart.getTime())) return TOTAL_SLOTS;
 
-                <div>
-                    <label>Slot:</label>
-                    <select
-                        value={selectedSlot}
-                        onChange={e => setSelectedSlot(e.target.value)}
-                        disabled={!date || slots.length === 0}
+    const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
+
+    const overlapping = bookedSlots.filter(slot => {
+      const slotStart = new Date(slot.start);
+      const slotEnd = new Date(slot.end);
+      return slotStart < hourEnd && slotEnd > hourStart;
+    }).length;
+
+    return Math.max(0, TOTAL_SLOTS - overlapping);
+  };
+
+  // Style for status text
+  const getStatusStyle = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'APPROVED': return { color: 'green', fontWeight: 'bold' };
+      case 'REJECTED': return { color: 'red', fontWeight: 'bold' };
+      case 'PENDING':
+      default: return { color: 'orange', fontWeight: 'bold' };
+    }
+  };
+
+  // Submit booking form
+  const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const now = new Date();
+  const startDate = new Date(formData.start);
+  const endDate = new Date(formData.end);
+
+  if (startDate <= now) {
+    setMessage("Start time must be in the future.");
+    return;
+  }
+
+  if (endDate <= startDate) {
+    setMessage("End time must be after start time.");
+    return;
+  }
+
+  axios.post(`${BACKEND_URL}/api/booking/book`, formData)
+    .then(res => {
+      setMessage(res.data.message || 'Booking successful!');
+      // Refresh bookings
+      if (formData.userId) {
+        axios.get(`${BACKEND_URL}/api/booking/user/${formData.userId}`)
+          .then(res => setUserBookings(res.data))
+          .catch(() => setUserBookings([]));
+      }
+    })
+    .catch(err => {
+      setMessage(err.response?.data?.message || 'Booking failed');
+    });
+};
+
+
+  return (
+    <div className="outer-card">
+      <div className="middle-card">
+        <div className="inner-card">
+          <h2>Book a Slot</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>User ID:</label>
+              <input
+                type="number"
+                name="userId"
+                value={formData.userId}
+                onChange={handleChange}
+                onBlur={handleUserIdBlur}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>License Plate:</label>
+              <input
+                type="text"
+                name="licensePlate"
+                value={formData.licensePlate}
+                onChange={handleChange}
+                disabled
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Vehicle Type:</label>
+              <input
+                type="text"
+                name="vehicleType"
+                value={formData.vehicleType}
+                onChange={handleChange}
+                disabled
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Start Time:</label>
+              <input
+                type="datetime-local"
+                name="start"
+                value={formData.start}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>End Time:</label>
+              <input
+                type="datetime-local"
+                name="end"
+                value={formData.end}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Slot Availability:</label>
+              <div className="slot-grid">
+                {[...Array(24).keys()].map(hour => {
+                  const displayHour = `${hour.toString().padStart(2, '0')}:00`;
+                  const available = getAvailableCount(displayHour);
+                  return (
+                    <div
+                      key={hour}
+                      className={`slot ${available === 0 ? 'full' : ''}`}
                     >
-                        <option value="">-- Select Slot --</option>
-                        {slots.map(slot => {
-                            const isFull = slot.includes('(FULL)');
-                            const hour = slot.split(':')[0]; // to extract hour for backend
-                            return (
-                                <option key={slot} value={hour} disabled={isFull}>
-                                    {slot}
-                                </option>
-                            );
-                        })}
-                    </select>
-                    {errors.selectedSlot && <div style={{ color: 'red' }}>{errors.selectedSlot}</div>}
-                </div>
+                      {displayHour} - {available} slots
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-                <button
-                    type="submit"
-                    className="bookButton"
-                    disabled={!selectedSlot || !vehicle}
+            <button type="submit">Book Slot</button>
+          </form>
+
+          {message && <p style={{ marginTop: '1rem', fontWeight: 'bold' }}>{message}</p>}
+
+          {/* User bookings list */}
+          {userBookings.length > 0 && (
+            <div style={{ marginTop: '2rem' }}>
+              <h3>Your Bookings</h3>
+              {userBookings.map(booking => (
+                <div
+                  key={booking.bookingId}
+                  style={{
+                    border: '1px solid #ccc',
+                    padding: '10px',
+                    marginBottom: '8px',
+                    borderRadius: '6px'
+                  }}
                 >
-                    Confirm Booking
-                </button>
-            </form>
+                  <p><strong>Booking ID:</strong> {booking.bookingId}</p>
+                  <p><strong>Vehicle:</strong> {booking.vehicleType} ({booking.licensePlate})</p>
+                  <p><strong>From:</strong> {new Date(booking.start).toLocaleString()}</p>
+                  <p><strong>To:</strong> {new Date(booking.end).toLocaleString()}</p>
+                  {booking.status && (
+                    <p>
+                      <strong>Status:</strong> <span style={getStatusStyle(booking.status)}>{booking.status}</span>
+                    </p>
+                  )}
+
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-    );
+      </div>
+
+    
+    </div>
+  );
 };
 
 export default Booking;
