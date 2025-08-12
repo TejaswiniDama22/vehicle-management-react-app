@@ -1,0 +1,16 @@
+----------------------------------------------------------------
+Tue Jul 29 13:03:15 IST 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-0198-5519-8ca0-0000013b40a0 
+on database directory memory:C:\Project\vehicle-management\practice\7a70dec2-9eff-4e58-b38f-b924d1fb4a0e with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@22d8cfe0 
+Loaded from file:/C:/Users/coforge/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
+java.vendor=Eclipse Adoptium
+java.runtime.version=17.0.4.1+1
+user.dir=C:\Project\vehicle-management\practice
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Tue Jul 29 13:03:18 IST 2025:
+Shutting down instance a816c00e-0198-5519-8ca0-0000013b40a0 on database directory memory:C:\Project\vehicle-management\practice\7a70dec2-9eff-4e58-b38f-b924d1fb4a0e with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@22d8cfe0 
