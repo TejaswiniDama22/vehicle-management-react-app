@@ -72,8 +72,8 @@ Follow these simple steps to use the Vehicle Parking System:
 | 🏠 Home              | [http://localhost:5173/](http://localhost:5173/)   |
 | 🔐 Login/Register    | [http://localhost:5173/login](http://localhost:5173/login) |
 | 📊 Dashboard         | [http://localhost:5173/dashboard](http://localhost:5173/dashboard) |
-| 🚘 Vehicle Register  | [http://localhost:5173/vehicle-register](http://localhost:5173/Vehicleregister) |
-| 🅿️ Book Slot         | [http://localhost:5173/book-slot](http://localhost:5173/booking) |
+| 🚘 Vehicle Register  | [http://localhost:5173/Vehicleregister](http://localhost:5173/Vehicleregister) |
+| 🅿️ Book Slot         | [http://localhost:5173/booking](http://localhost:5173/booking) |
 | 📝 Feedback/Report   | [http://localhost:5173/report](http://localhost:5173/report) |
 
 ---
